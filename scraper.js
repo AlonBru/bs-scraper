@@ -38,7 +38,7 @@ async function getSales(){
   console.log('started')
 
   const browser = await puppeteer.launch({
-    // headless: false,
+    headless: false,
     timeout:4000
   })
   async function doTrack (link){
@@ -51,44 +51,45 @@ async function getSales(){
       )
     await page.close()
     return activities
-  } 
+  }
+
   async function doActivity (link){
     const page = await browser.newPage()
     await page.goto(link) 
     await page.waitForSelector('.footer',{
       timeout:0
     })
-    const test = await page.$(".full-activity-confirm-play")
-    if(test){
-      await page.close()
-      return 'big test on '+link
-    }
-    const checked = await page.$('.checked')
-    try{
-      await checked.click()      
-    }catch(err){
-      await page.close()
-      return 'done'
-    }
-    // const checked = await page.$$('.custom-checkbox')
-    // try{
-    //   await checked[0].click()      
-    // }catch(err){
+    page.waitForSelector('.checked',{timeout:3000,visible:true})
+    .then(()=>page.close())
+    .catch(async ()=>{
+      const box = await page.waitForSelector('.custom-checkbox:not(.checked)',{timeout:3000,visible:true})
+      await box.click()
+      await box.click()
+      await box.click()
+      await box.click()
+      await box.click()
+    })
+      // const modal1 = await page.waitForSelector('.current-activity-icon',{
+      //   timeout:2000,
+      //   visible:true
+      // })
+    // const test = await page.$(".full-activity-confirm-play")
+    // if(test){
     //   await page.close()
-    //   return 'done'
+    //   return 'big test on '+link
     // }
-    const modal1 = await page.$eval('.modal-body',(ele=>ele.childElementCount),{
-      timeout:1500,
-    })
-    const modal2 = await page.$eval('.modal-body',(ele=>ele.childElementCount),{
-      timeout:1500,
-    })
-    if(modal1&&modal2){
-      await page.close()
-      return 'test on '+link
-    }
-    await page.close()
-    return 'done'
+    
+    // const notChecked = await page.waitForSelector('.custom-checkbox:not(.checked)',{visible:true,timeout:2000})
+    
+    // const click = await notChecked.click()     
+    // .catch(()=>{})      
+      // if(modal1){
+      //   await page.close()
+      //   return 'test on '+link
+      // }else{
+      //   await page.close()
+      //   return 'done'
+      // }
   }
    
 
@@ -131,16 +132,18 @@ async function getSales(){
     for(let track in tracks){
       const index = Number(track)+1
       console.log('doing track '+index)
-      const activites = await doTrack(tracks[track])
-      const result =  await Promise.all(
-        activites.map(
-          async(act)=>await doActivity(act)
-        )
-      )
-      const results = result.filter(act=>act!=='done')
-      console.log('track '+index+' results:\n'+results.join(
-        '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
-        ))
+      const activities = await doTrack(tracks[track])
+      const results = []
+      for (let act in activities){
+        if(index>0&&Number(act)>4){
+          const result = await doActivity(activities[act])
+          results.push(result)
+        }
+        const nice = results.filter(act=>act!=='done').join(
+          '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
+          )
+          console.log('track '+index+' results:\n'+nice)
+        }
     }
 
     console.log('finished')

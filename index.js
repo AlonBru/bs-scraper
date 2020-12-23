@@ -18,7 +18,7 @@ const start = () => {
     if(''+data === 'finished'){
       return console.log(chalk.green(data))
     }
-    console.log(`child: ${data}`);
+    console.log(`scraper: ${data}`);
   });
   
   ls.stderr.on('data', (data) => {
