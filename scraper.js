@@ -60,23 +60,34 @@ async function getSales(){
     })
     const test = await page.$(".full-activity-confirm-play")
     if(test){
-      page.close()
-      return 'test on '+link
+      await page.close()
+      return 'big test on '+link
     }
-    const checked = await page.$$('.custom-checkbox')
-    
+    const checked = await page.$('.checked')
     try{
-      await checked[0].click()      
+      await checked.click()      
     }catch(err){
+      await page.close()
       return 'done'
     }
-    const modal = await page.$('.modal-body',{
+    // const checked = await page.$$('.custom-checkbox')
+    // try{
+    //   await checked[0].click()      
+    // }catch(err){
+    //   await page.close()
+    //   return 'done'
+    // }
+    const modal1 = await page.$eval('.modal-body',(ele=>ele.childElementCount),{
       timeout:1500,
     })
-    if(modal){
+    const modal2 = await page.$eval('.modal-body',(ele=>ele.childElementCount),{
+      timeout:1500,
+    })
+    if(modal1&&modal2){
+      await page.close()
       return 'test on '+link
     }
-    page.close()
+    await page.close()
     return 'done'
   }
    
@@ -118,6 +129,8 @@ async function getSales(){
     console.log("Got Tracks")
 
     for(let track in tracks){
+      const index = Number(track)+1
+      console.log('doing track '+index)
       const activites = await doTrack(tracks[track])
       const result =  await Promise.all(
         activites.map(
@@ -125,7 +138,7 @@ async function getSales(){
         )
       )
       const results = result.filter(act=>act!=='done')
-      console.log('track '+track+' results:\n'+results.join(
+      console.log('track '+index+' results:\n'+results.join(
         '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
         ))
     }
