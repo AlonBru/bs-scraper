@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SteamSales</title>
+  <style>
+    table,
+    td {
+        border: 1px solid #333;
+      }
+      
+      thead,
+      tfoot {
+        background-color: #333;
+        color: #fff;
+      }
+      th,td{
+
+        padding:6px;
+      }
+
+  </style>
+</head>
+<body>
+  <h1> Steam Sales</h1>
+  <label>  
+  term:
+    <input id='searchbar' placeholder="search a title">
+  </label>
+  <label>  
+  count:
+    <input id='count' type='number' value='50' min="25" style="width:50px">
+  </label>
+  <button id='searchBtn' onclick="get">GET</button>
+  <table>
+    <thead>
+        <tr>
+            <th >Title</th>
+            <th >percent</th>
+            <th >sale price</th>
+            <th >normal price</th>
+        </tr>
+    </thead>
+    <tbody id='tbody'>
+    </tbody>
+</table>
+
+  <script>
+    const searchbar = document.getElementById('searchbar')
+    const count = document.getElementById('count')
+    const button = document.getElementById('searchBtn')
+    const tbody =  document.getElementById('tbody')
+    function tableRow(values){
+      const row = document.createElement('tr')
+      values.forEach(value=>{
+        const cell = document.createElement('td')
+        cell.innerText= value
+        row.appendChild(cell)
+      })
+      return row
+    }
+    function get(){
+      console.log('getting '+searchbar.value,count.value)
+    fetch(`/get/${searchbar.value}?count=${count.value}`)
+    .then(res=>res.json())
+    .then((data)=>{
+      console.log(data)
+      data.forEach(game=>{
+        console.log()
+        tbody.append(
+          tableRow(
+            Object.values(game)
+            )
+        )
+      })
+    })
+    .catch(res=>console.log(res))
+    }
+    
+    button.onclick=get
+  </script>
+</body>
+</html>
